@@ -1,7 +1,17 @@
 from django.contrib.auth.models import User, Group
+from sensors.models import Room
 from rest_framework import viewsets
 from rest_framework import permissions
-from sensors.serializers import UserSerializer, GroupSerializer
+from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer
+
+
+class RoomViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows rooms to be viewed or edited.
+    """
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class UserViewSet(viewsets.ModelViewSet):
