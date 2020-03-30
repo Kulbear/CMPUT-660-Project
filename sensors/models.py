@@ -36,7 +36,7 @@ class Room(models.Model):
 
 class Device(models.Model):
     device_id = models.CharField(max_length=40, primary_key=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    room = models.CharField(max_length=40)
     device_type = models.CharField(max_length=40, choices=DEVICE_TYPES)
     device_name = models.CharField(max_length=40)
     device_label = models.CharField(max_length=40)

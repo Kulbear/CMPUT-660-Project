@@ -11,6 +11,32 @@ from rest_framework.response import Response
 
 
 @api_view(['POST'])
+def device_scan(request, format=None):
+    req_data = request.data
+    for item in req_data['data']:
+        try:
+            if item['type'] == 'HUB':
+                device = Device(device_id=item['deviceId'], device_name=item['name'],
+                                device_label=item['label'], location_id=item['location_id'],
+                                device_type='SmartThings v3 Hub', room='', complete_setup=True,
+                                hub_id=item['deviceId'], network_type='', network_sec='',
+                                device_description='')
+            else:
+                device = Device(device_id=item['deviceId'], device_name=item['name'],
+                                device_label=item['label'], location_id=item['location_id'],
+                                device_type=item['dth']['deviceTypeName'], room=item['roomId'],
+                                complete_setup=item['dth']['completedSetup'],
+                                hub_id=item['dth']['hubId'],
+                                network_type=item['dth']['deviceNetworkType'],
+                                network_sec=item['dth']['networkSecurityLevel'],
+                                device_description=item['dth']['deviceTypeName'])
+        except:
+            pass
+        else:
+            device.save()
+
+
+@api_view(['POST'])
 def sensor_data_stream(request, format=None):
     data = request.data
     device_id = data['device_id']
