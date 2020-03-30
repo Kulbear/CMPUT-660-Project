@@ -4,10 +4,84 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer
 from sensors.serializers import DeviceSerializer, DeviceDataSerializer, PersonSeiralizer
-
+from pprint import pprint
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+
+@api_view(['POST'])
+def sensor_data_stream(request, format=None):
+    data = request.data
+    device_id = data['device_id']
+    data = data['components']['main']
+    pprint(data)
+
+    # find device
+    try:
+        device = Device.objects.get(device_id=device_id)
+    except Device.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    # common properties
+    actuator = str(data.get('actuator', {}))
+    configuration = str(data.get('configuration', {}))
+    # health_check = str(data.get('healthCheck', {}))
+    health_check = ''
+    refresh = str(data.get('refresh', {}))
+    sensor = str(data.get('sensor', {}))
+
+    # outlet only
+    outlet_switch_value = str(None)
+    if 'outlet' in data:
+        outlet_switch_value = data['outlet']['switch']['value']
+
+    power_unit = str(None)
+    power_value = 0.
+    if 'powerMeter' in data:
+        power_unit = data['powerMeter']['power']['unit']
+        power_value = float(data['powerMeter']['power']['value'])
+
+    # motion sensor
+    motion_sensor_value = str(None)
+    temperature_unit = str(None)
+    temperature_value = -999.
+    if 'motionSensor' in data:
+        motion_sensor_value = data['motionSensor']['motion']['value']
+        temperature_unit = data['temperatureMeasurement']['temperature']['unit']
+        temperature_value = float(data['temperatureMeasurement']['temperature']['value'])
+
+    lock_data = str(None)
+    lock_value = str(None)
+    if 'lock' in data:
+        lock_data = data['lock']['lock']['data']
+        lock_value = data['lock']['lock']['value']
+
+    battery_value = -1.
+    if 'battery' in data:
+        battery_value = float(data['battery']['battery']['value'])
+
+    holdable_button = str(None)
+    if 'button' in data:
+        holdable_button = data['button']['button']['value']
+
+    device_data = DeviceData(
+        device=device,
+        actuator=actuator,
+        configuration=configuration,
+        health_check=health_check,
+        refresh=refresh,
+        sensor=sensor,
+        battery_value=battery_value,
+        lock_data=lock_data, lock_value=lock_value,
+        motion_sensor_value=motion_sensor_value,
+        temperature_unit=temperature_unit,
+        temperature_value=temperature_value,
+        power_unit=power_unit, power_value=power_value,
+        holdable_button=holdable_button,
+        outlet_switch_value=outlet_switch_value
+    )
+    device_data.save()
 
 
 @api_view(['GET', 'POST'])
