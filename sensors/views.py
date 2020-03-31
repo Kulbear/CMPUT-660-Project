@@ -1,13 +1,59 @@
 from django.contrib.auth.models import User, Group
-from sensors.models import Room, Device, DeviceData, Person
+from sensors.models import Room, Device, DeviceData, Person, CameraRecord
+import face_recognition
 from rest_framework import viewsets
 from rest_framework import permissions
-from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer
+from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer, CameraRecordSerializer
 from sensors.serializers import DeviceSerializer, DeviceDataSerializer, PersonSeiralizer
 from pprint import pprint
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+
+@api_view(['POST'])
+def face_record(request, format=None):
+    req_data = request.data
+    face_encodings = req_data['face_encodings']
+    camera_id = req_data['camera_id']
+
+    database_face_encodings = []
+    database_face_names = []
+    database_face_ids = []
+    people = Person.objects.all().values()
+    for person in people:
+        database_face_ids.append(person['person_id'])
+        database_face_encodings.append(person['face_embedding'])
+        database_face_names.append(person['name'])
+
+    detected_people = []
+    # start to compare with database
+    for encoding in face_encodings:
+        matches = face_recognition.compare_faces(database_face_encodings,
+                                                 encoding)
+        print(matches)
+        if True in matches:
+            # find the indexes of all matched faces then initialize a
+            # dictionary to count the total number of times each face
+            # was matched
+            matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+            counts = {}
+            # loop over the matched indexes and maintain a count for
+            # each recognized face face
+            for i in matchedIdxs:
+                name = database_face_names[i]
+                counts[name] = counts.get(name, 0) + 1
+            # determine the recognized face with the largest number of
+            # votes (note: in the event of an unlikely tie Python will
+            # select first entry in the dictionary)
+            name = max(counts, key=counts.get)
+            p_idx = database_face_names.index(name)
+
+            cam_record = CameraRecord(person_id=database_face_ids[p_idx], person_name=name,
+                                      camera_id=camera_id)
+            if cam_record.is_valid():
+                cam_record.save()
+    return Response({}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
@@ -33,7 +79,9 @@ def device_scan(request, format=None):
         except:
             pass
         else:
-            device.save()
+            if device.is_valid():
+                device.save()
+    return Response({}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
@@ -107,7 +155,11 @@ def sensor_data_stream(request, format=None):
         holdable_button=holdable_button,
         outlet_switch_value=outlet_switch_value
     )
-    device_data.save()
+
+    if device_data.is_valid():
+        device_data.save()
+        return Response(device_data.data, status=status.HTTP_201_CREATED)
+    return Response(device_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])

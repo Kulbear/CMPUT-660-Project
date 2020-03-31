@@ -28,6 +28,8 @@ urlpatterns = [
     path('', include(router.urls)),
     path('rooms/', views.room_list),
     path('room/<int:pk>', views.room_detail),
+    path('device_scan/', views.device_scan),
+    path('camera_record/', views.face_record),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 

@@ -1,6 +1,12 @@
 from django.contrib.auth.models import User, Group
-from sensors.models import Room, Device, DeviceData, Person
+from sensors.models import Room, Device, DeviceData, Person, CameraRecord
 from rest_framework import serializers
+
+
+class CameraRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CameraRecord
+        fields = ['person_id', 'camera_id', 'person_name']
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):

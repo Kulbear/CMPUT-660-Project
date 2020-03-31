@@ -79,6 +79,7 @@ class Person(models.Model):
     create_by = models.DateTimeField(auto_now_add=True)
 
 class CameraRecord(models.Model):
-    person_id = models.CharField(max_length=40, primary_key=True)
+    person_id = models.CharField(max_length=40)
+    person_name = models.CharField(max_length=40)
     record_time = models.DateTimeField(auto_now_add=True)
-    face_encoding = models.TextField()
+    camera_id = models.TextField()
