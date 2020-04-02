@@ -84,31 +84,33 @@ def face_record(request, format=None):
 
 
 @api_view(['POST'])
-def device_scan(request, format=None):
-    req_data = request.data
-    for item in req_data['data']:
-        try:
-            if item['type'] == 'HUB':
-                device = Device(device_id=item['deviceId'], device_name=item['name'],
-                                device_label=item['label'], location_id=item['location_id'],
-                                device_type='SmartThings v3 Hub', room='', complete_setup=True,
-                                hub_id=item['deviceId'], network_type='', network_sec='',
-                                device_description='')
-            else:
-                device = Device(device_id=item['deviceId'], device_name=item['name'],
-                                device_label=item['label'], location_id=item['location_id'],
-                                device_type=item['dth']['deviceTypeName'], room=item['roomId'],
-                                complete_setup=item['dth']['completedSetup'],
-                                hub_id=item['dth']['hubId'],
-                                network_type=item['dth']['deviceNetworkType'],
-                                network_sec=item['dth']['networkSecurityLevel'],
-                                device_description=item['dth']['deviceTypeName'])
-        except:
-            pass
+def device_scan(request, device_id):
+    item = request.data
+    print(device_id)
+    # print(item)
+    try:
+        if item['type'] == 'HUB':
+            device = Device(device_id=device_id, device_name=item['name'],
+                            device_label=item['label'], location_id='',
+                            device_type='SmartThings v3 Hub', room='', complete_setup=True,
+                            hub_id=item['deviceId'], network_type='', network_sec='',
+                            device_description='')
         else:
-            if device.is_valid():
-                device.save()
-    return Response({}, status=status.HTTP_201_CREATED)
+            device = Device(device_id=device_id, device_name=item['name'],
+                            device_label=item['label'], location_id=item['locationId'],
+                            device_type=item['dth']['deviceTypeName'], room=item['roomId'],
+                            complete_setup=item['dth']['completedSetup'],
+                            hub_id=item['dth']['hubId'],
+                            network_type=item['dth']['deviceNetworkType'],
+                            network_sec=item['dth']['networkSecurityLevel'],
+                            device_description=item['dth']['deviceTypeName'])
+    except Exception as e:
+        print('Error', e)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    else:
+        device.save()
+        return Response(status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -165,28 +167,29 @@ def sensor_data_stream(request, format=None):
     holdable_button = str(None)
     if 'button' in data:
         holdable_button = data['button']['button']['value']
+    try:
+        device_data = DeviceData(
+            device=device,
+            actuator=actuator,
+            configuration=configuration,
+            health_check=health_check,
+            refresh=refresh,
+            sensor=sensor,
+            battery_value=battery_value,
+            lock_data=lock_data, lock_value=lock_value,
+            motion_sensor_value=motion_sensor_value,
+            temperature_unit=temperature_unit,
+            temperature_value=temperature_value,
+            power_unit=power_unit, power_value=power_value,
+            holdable_button=holdable_button,
+            outlet_switch_value=outlet_switch_value
+        )
 
-    device_data = DeviceData(
-        device=device,
-        actuator=actuator,
-        configuration=configuration,
-        health_check=health_check,
-        refresh=refresh,
-        sensor=sensor,
-        battery_value=battery_value,
-        lock_data=lock_data, lock_value=lock_value,
-        motion_sensor_value=motion_sensor_value,
-        temperature_unit=temperature_unit,
-        temperature_value=temperature_value,
-        power_unit=power_unit, power_value=power_value,
-        holdable_button=holdable_button,
-        outlet_switch_value=outlet_switch_value
-    )
 
-    if device_data.is_valid():
         device_data.save()
-        return Response(device_data.data, status=status.HTTP_201_CREATED)
-    return Response(device_data.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_201_CREATED)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])

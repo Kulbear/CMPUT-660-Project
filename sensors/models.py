@@ -46,7 +46,6 @@ class Device(models.Model):
     hub_id = models.CharField(max_length=40)
     network_type = models.CharField(max_length=40, choices=NETWORK_TYPES)
     network_sec = models.CharField(max_length=40)
-    create_by = models.DateTimeField(auto_now_add=True)
 
 
 class DeviceData(models.Model):
