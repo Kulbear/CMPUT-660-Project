@@ -55,7 +55,8 @@ class DeviceData(models.Model):
     health_check = models.TextField()
     refresh = models.CharField(max_length=40)
     sensor = models.CharField(max_length=40)
-
+    face_name = models.CharField(max_length=40)
+    face_email = models.CharField(max_length=100)
     battery_value = models.FloatField()
     lock_data = models.CharField(max_length=40)
     lock_value = models.CharField(max_length=40)

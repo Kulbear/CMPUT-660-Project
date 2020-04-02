@@ -126,28 +126,34 @@ def sensor_data_stream(request, device_id=None):
     refresh = str(data.get('refresh', {}))
     sensor = str(data.get('sensor', {}))
 
+    face_name = ''
+    face_email = ''
+    if 'face' in data:
+        face_name = data['face']['name']
+        face_email = data['face']['email']
+
     # outlet only
-    outlet_switch_value = str(None)
+    outlet_switch_value = ''
     if 'outlet' in data:
         outlet_switch_value = data['outlet']['switch']['value']
 
-    power_unit = str(None)
+    power_unit = ''
     power_value = 0.
     if 'powerMeter' in data:
         power_unit = data['powerMeter']['power']['unit']
         power_value = float(data['powerMeter']['power']['value'])
 
     # motion sensor
-    motion_sensor_value = str(None)
-    temperature_unit = str(None)
+    motion_sensor_value = ''
+    temperature_unit = ''
     temperature_value = -999.
     if 'motionSensor' in data:
         motion_sensor_value = data['motionSensor']['motion']['value']
         temperature_unit = data['temperatureMeasurement']['temperature']['unit']
         temperature_value = float(data['temperatureMeasurement']['temperature']['value'])
 
-    lock_data = str(None)
-    lock_value = str(None)
+    lock_data = ''
+    lock_value = ''
     if 'lock' in data:
         lock_data = data['lock']['lock']['data']
         lock_value = data['lock']['lock']['value']
@@ -156,33 +162,34 @@ def sensor_data_stream(request, device_id=None):
     if 'battery' in data:
         battery_value = float(data['battery']['battery']['value'])
 
-    holdable_button = str(None)
+    holdable_button = ''
     if 'button' in data:
         holdable_button = data['button']['button']['value']
-    # try:
-    device_data = DeviceData(
-        device=device_id,
-        actuator=actuator,
-        configuration=configuration,
-        health_check=health_check,
-        refresh=refresh,
-        sensor=sensor,
-        battery_value=battery_value,
-        lock_data=lock_data, lock_value=lock_value,
-        motion_sensor_value=motion_sensor_value,
-        temperature_unit=temperature_unit,
-        temperature_value=temperature_value,
-        power_unit=power_unit, power_value=power_value,
-        holdable_button=holdable_button,
-        outlet_switch_value=outlet_switch_value,
-        create_by=Now()
-    )
+    try:
+        device_data = DeviceData(
+            device=device_id,
+            actuator=actuator,
+            configuration=configuration,
+            health_check=health_check,
+            refresh=refresh,
+            sensor=sensor,
+            battery_value=battery_value,
+            lock_data=lock_data, lock_value=lock_value,
+            motion_sensor_value=motion_sensor_value,
+            temperature_unit=temperature_unit,
+            temperature_value=temperature_value,
+            power_unit=power_unit, power_value=power_value,
+            holdable_button=holdable_button,
+            outlet_switch_value=outlet_switch_value,
+            face_name=face_name,
+            face_email=face_email,
+            create_by=Now()
+        )
 
-
-    device_data.save()
-    return Response(status=status.HTTP_201_CREATED)
-    # except:
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        device_data.save()
+        return Response(status=status.HTTP_201_CREATED)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])
