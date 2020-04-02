@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User, Group
 from sensors.models import Room, Device, DeviceData, Person, CameraRecord
 import face_recognition
@@ -6,9 +7,35 @@ from rest_framework import permissions
 from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer, CameraRecordSerializer
 from sensors.serializers import DeviceSerializer, DeviceDataSerializer, PersonSeiralizer
 from pprint import pprint
+import ast
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+
+@api_view(['POST'])
+def register_user(request, format=None):
+    req_data = request.data
+    face_encodings = req_data['face_encodings']
+    name = req_data['name']
+    email = req_data['email']
+    identity = req_data['identity']
+    try:
+        try:
+            person = Person.objects.get(email=email)
+            person.name = name
+            person.identity = identity
+            face_embedding = ast.literal_eval(person.face_embedding)
+            face_embedding.extend(face_encodings)
+            person.face_embedding = face_embedding
+            person.save()
+            return Response(status=status.HTTP_201_CREATED)
+        except ObjectDoesNotExist:
+            person = Person(name=name, email=email, identity=identity, face_embedding=str(face_encodings))
+            person.save()
+            return Response(status=status.HTTP_202_ACCEPTED)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

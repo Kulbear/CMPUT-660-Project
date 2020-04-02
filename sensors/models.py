@@ -76,7 +76,6 @@ class Person(models.Model):
     name = models.CharField(max_length=100)
     identity = models.CharField(max_length=100)
     email = models.EmailField()
-    create_by = models.DateTimeField(auto_now_add=True)
 
 class CameraRecord(models.Model):
     person_id = models.CharField(max_length=40)
