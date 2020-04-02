@@ -31,6 +31,7 @@ urlpatterns = [
     path('device_scan/<str:device_id>', views.device_scan),
     path('register_user/', views.register_user),
     path('camera_record/', views.face_record),
+    path('sensor_stream/<str:device_id>', views.sensor_data_stream),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 

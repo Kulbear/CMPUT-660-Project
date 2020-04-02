@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User, Group
 from sensors.models import Room, Device, DeviceData, Person, CameraRecord
 import face_recognition
+from django.db.models.functions import Now
 from rest_framework import viewsets
 from rest_framework import permissions
 from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer, CameraRecordSerializer
@@ -114,17 +115,8 @@ def device_scan(request, device_id):
 
 
 @api_view(['POST'])
-def sensor_data_stream(request, format=None):
+def sensor_data_stream(request, device_id=None):
     data = request.data
-    device_id = data['device_id']
-    data = data['components']['main']
-    pprint(data)
-
-    # find device
-    try:
-        device = Device.objects.get(device_id=device_id)
-    except Device.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
     # common properties
     actuator = str(data.get('actuator', {}))
@@ -167,29 +159,30 @@ def sensor_data_stream(request, format=None):
     holdable_button = str(None)
     if 'button' in data:
         holdable_button = data['button']['button']['value']
-    try:
-        device_data = DeviceData(
-            device=device,
-            actuator=actuator,
-            configuration=configuration,
-            health_check=health_check,
-            refresh=refresh,
-            sensor=sensor,
-            battery_value=battery_value,
-            lock_data=lock_data, lock_value=lock_value,
-            motion_sensor_value=motion_sensor_value,
-            temperature_unit=temperature_unit,
-            temperature_value=temperature_value,
-            power_unit=power_unit, power_value=power_value,
-            holdable_button=holdable_button,
-            outlet_switch_value=outlet_switch_value
-        )
+    # try:
+    device_data = DeviceData(
+        device=device_id,
+        actuator=actuator,
+        configuration=configuration,
+        health_check=health_check,
+        refresh=refresh,
+        sensor=sensor,
+        battery_value=battery_value,
+        lock_data=lock_data, lock_value=lock_value,
+        motion_sensor_value=motion_sensor_value,
+        temperature_unit=temperature_unit,
+        temperature_value=temperature_value,
+        power_unit=power_unit, power_value=power_value,
+        holdable_button=holdable_button,
+        outlet_switch_value=outlet_switch_value,
+        create_by=Now()
+    )
 
 
-        device_data.save()
-        return Response(status=status.HTTP_201_CREATED)
-    except:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    device_data.save()
+    return Response(status=status.HTTP_201_CREATED)
+    # except:
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])

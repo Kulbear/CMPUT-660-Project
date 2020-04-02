@@ -49,7 +49,7 @@ class Device(models.Model):
 
 
 class DeviceData(models.Model):
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    device = models.CharField(max_length=40)
     actuator = models.CharField(max_length=100)
     configuration = models.CharField(max_length=255)
     health_check = models.TextField()
