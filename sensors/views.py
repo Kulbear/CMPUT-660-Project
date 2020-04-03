@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User, Group
 from sensors.models import Room, Device, DeviceData, Person, CameraRecord
 import face_recognition
+import datetime
 from django.db.models.functions import Now
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -12,6 +13,32 @@ import ast
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+
+@api_view(['POST'])
+def fetch_sensor_data_by(request):
+    req_data = request.data
+    start = req_data.get('start', None)
+    end = req_data.get('end', None)
+    device_type = req_data.get('device_type', None)
+    device_id = req_data.get('device_id', None)
+
+    d_data = None
+    if start and end:
+        start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+        end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+        d_data = DeviceData.objects.filter(create_by__range=(start_date, end_date))
+    if device_id:
+        if d_data:
+            d_data = d_data.objects.filter(device_id=device_id)
+        else:
+            d_data = DeviceData.objects.filter(device_id=device_id)
+
+    if d_data == None:
+        d_data = DeviceData.objects.all()
+
+    d_data = d_data.values()
+    return Response({'data': d_data}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
