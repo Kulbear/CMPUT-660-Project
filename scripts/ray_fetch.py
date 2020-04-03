@@ -43,7 +43,8 @@ def get_sensor_data(target, target_id):
     except:
         print(d_id, 'failed!')
 
-
+import time
 while True:
+    time.sleep(1)
     print('Done 1 cycle')
     futures = [get_sensor_data.remote(target[idx], target_ids[idx]) for idx in range(len(target))]
