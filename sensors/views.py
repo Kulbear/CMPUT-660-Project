@@ -30,7 +30,7 @@ def fetch_sensor_data_by(request):
         d_data = DeviceData.objects.filter(create_by__range=(start_date, end_date))
     if device_id:
         if d_data:
-            d_data = d_data.objects.filter(device_id=device_id)
+            d_data = d_data.filter(device=device_id)
         else:
             d_data = DeviceData.objects.filter(device_id=device_id)
 
