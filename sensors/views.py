@@ -188,6 +188,7 @@ def sensor_data_stream(request, device_id=None):
 
         device_data.save()
         return Response(status=status.HTTP_201_CREATED)
+
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

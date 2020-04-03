@@ -24,7 +24,7 @@ SECRET_KEY = 'y8n+2wvll!+4fy*riwg-7@x#xyr&=u6t$71xgp1=#x1$!ii=rz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '18.219.138.71']
 
 # Application definition
 
@@ -87,8 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'c660iot',
         'USER': 'c660',
-        'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': '0.0.0.0',
         'PORT': '',
     }
 }
