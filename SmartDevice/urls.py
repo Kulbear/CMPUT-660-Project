@@ -33,6 +33,8 @@ urlpatterns = [
     path('camera_record/', views.face_record),
     path('sensor_stream/<str:device_id>', views.sensor_data_stream),
     path('fetch_by/', views.fetch_sensor_data_by),
+    path('sec_sensor_data/', views.sec_sensor_data),
+    path('get_sensor_data/', views.get_sensor_data),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 

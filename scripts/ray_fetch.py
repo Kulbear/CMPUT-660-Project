@@ -39,7 +39,7 @@ def get_sensor_data(target, target_id):
     try:
         result = json.loads(a.content.decode('utf-8'))
         data = result['components']['main']
-        r = requests.post(url=API_ENDPOINT + target_id, json=data)
+        requests.post(url=API_ENDPOINT + target_id, json=data)
     except:
         print(d_id, 'failed!')
 
@@ -48,3 +48,5 @@ while True:
     time.sleep(1)
     print('Done 1 cycle')
     futures = [get_sensor_data.remote(target[idx], target_ids[idx]) for idx in range(len(target))]
+
+

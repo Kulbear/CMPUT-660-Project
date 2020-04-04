@@ -1,18 +1,47 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User, Group
-from sensors.models import Room, Device, DeviceData, Person, CameraRecord
+from sensors.models import Room, Device, DeviceData, Person, CameraRecord, SensorData
 import face_recognition
 import datetime
 from django.db.models.functions import Now
 from rest_framework import viewsets
 from rest_framework import permissions
 from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer, CameraRecordSerializer
-from sensors.serializers import DeviceSerializer, DeviceDataSerializer, PersonSeiralizer
+from sensors.serializers import DeviceSerializer, DeviceDataSerializer, PersonSeiralizer, SensorDataSerializer
 from pprint import pprint
 import ast
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+
+@api_view(['POST'])
+def sec_sensor_data(request):
+    req_data = request.data
+
+    s = SensorData(location=req_data['location'], sensor_data=req_data['sensor_data'],
+                   created_by=Now())
+    s.save()
+    return Response(status=status.HTTP_201_CREATED)
+    # except:
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_sensor_data(request):
+    now = datetime.datetime.now()
+    now_plus_10 = now + datetime.timedelta(minutes=1)
+    data = SensorData.objects.filter(created_by__range=(now - datetime.timedelta(minutes=10), now_plus_10)).order_by(
+        '-created_by').values()
+    print(data)
+    try:
+        sensor_data_1 = data[0]['sensor_data']
+        location = data[0]['location']
+        sensor_data_2 = data[1]['sensor_data']
+        return Response(data={'current_sensor_data': sensor_data_1, 'prev_sensor_data': sensor_data_2,
+                              'location': location}, status=status.HTTP_202_ACCEPTED)
+    except:
+        return Response(data={}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -32,7 +61,7 @@ def fetch_sensor_data_by(request):
         if d_data:
             d_data = d_data.filter(device=device_id)
         else:
-            d_data = DeviceData.objects.filter(device_id=device_id)
+            d_data = DeviceData.objects.filter(device=device_id)
 
     if d_data == None:
         d_data = DeviceData.objects.all()
