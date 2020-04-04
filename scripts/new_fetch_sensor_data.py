@@ -4,7 +4,9 @@ from pprint import pprint
 from collections import defaultdict
 import datetime
 
+
 def update_person_location(sensor_data, all_previous_location):
+    sensor_data['time'] = datetime.datetime.now()
     if sensor_data["time"].second + sensor_data["time"].minute + sensor_data["time"].hour == 0:
         return dict()
 
@@ -78,7 +80,7 @@ name_type_template = {
     'Room_Door_Camera': 'PCL1_{}_DC_1_TL'
 }
 
-API_ENDPOINT = 'http://127.0.0.1:8000/sensor_stream/'
+API_ENDPOINT = 'http://127.0.0.1:8000/'
 API_HOST_1 = 'https://api.smartthings.com'
 API_HOST_2 = 'http://pacific-temple-42851.herokuapp.com'
 token = '7b8e7f8b-63cc-465c-9dad-b488b2351096'
@@ -100,7 +102,6 @@ for host in [API_HOST_2]:
             room_device_mapping['Room_1_1_140'].append(
                 (data_item['deviceId'], data_item.get('deviceTypeName', 'SmartThings Hub')))
 
-
 import time
 
 while True:
@@ -108,7 +109,8 @@ while True:
     req = requests.get(API_HOST_2 + '/v1/devices/all', headers=headers)
     all_device_data = json.loads(req.content.decode('utf-8'))
 
-    sensor_data = defaultdict(dict)
+    sensor_data = {}
+    sensor_data['data'] = defaultdict(dict)
     for room in room_device_mapping:
         for d_id, d_type in room_device_mapping[room]:
             try:
@@ -129,16 +131,16 @@ while True:
                 elif 'face' in data:
                     device_type = 'Room_Door_Camera'
                     value = data['face']['face']['name']
-                sensor_data[room][name_type_template[device_type].format(''.join(room.split('_')[-3:]))] = {
+                sensor_data['data'][room][name_type_template[device_type].format(''.join(room.split('_')[-3:]))] = {
                     'type': device_type,
                     'value': value
                 }
             except:
                 print(d_id, 'failed!')
-    sensor_data['time'] = datetime.datetime.now()
-    print(sensor_data.keys())
+
+    sensor_data['data'] = dict(sensor_data['data'])
     first_location = update_person_location(sensor_data, first_location)
     print(first_location)
-
-    upload_data = {'sensor_data': str(dict(sensor_data)), 'locations': str(first_location)}
-    r = requests.post(url=API_ENDPOINT + '/sec_sensor_data/', json=upload_data)
+    del sensor_data['time']
+    upload_data = {'sensor_data': str(sensor_data), 'location': str(first_location)}
+    r = requests.post(url=API_ENDPOINT + 'sec_sensor_data/', json=upload_data)
