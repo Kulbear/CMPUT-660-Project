@@ -15,6 +15,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 
+
+
 @api_view(['POST'])
 def sec_sensor_data(request):
     req_data = request.data
@@ -54,6 +56,20 @@ def get_sensor_data(request):
                               'location': location}, status=status.HTTP_202_ACCEPTED)
     except:
         return Response(data={}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def fetch_location_data_by(request):
+    req_data = request.data
+    try:
+        start = req_data.get('start', None)
+        end = req_data.get('end', None)
+        start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+        end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+        d_data = LocationData.objects.filter(create_by__range=(start_date, end_date)).values()
+        return Response({'data': d_data}, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
