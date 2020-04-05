@@ -77,13 +77,21 @@ class Person(models.Model):
     identity = models.CharField(max_length=100)
     email = models.EmailField()
 
+
 class CameraRecord(models.Model):
     person_id = models.CharField(max_length=40)
     person_name = models.CharField(max_length=40)
     record_time = models.DateTimeField(auto_now_add=True)
     camera_id = models.TextField()
 
+
 class SensorData(models.Model):
     location = models.TextField()
     sensor_data = models.TextField()
+    created_by = models.DateTimeField(auto_now_add=True)
+
+
+class LocationData(models.Model):
+    name = models.CharField(max_length=40)
+    location = models.CharField(max_length=40)
     created_by = models.DateTimeField(auto_now_add=True)

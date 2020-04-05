@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User, Group
-from sensors.models import Room, Device, DeviceData, Person, CameraRecord, SensorData
+from sensors.models import Room, Device, DeviceData, Person, CameraRecord, SensorData, LocationData
 import face_recognition
 import datetime
 from django.db.models.functions import Now
@@ -19,9 +19,21 @@ from rest_framework.response import Response
 def sec_sensor_data(request):
     req_data = request.data
 
+    # save sensor data
     s = SensorData(location=req_data['location'], sensor_data=req_data['sensor_data'],
                    created_by=Now())
     s.save()
+
+    # save location data
+    locations = ast.literal_eval(req_data['location'])
+    for name in locations:
+        if name == 'time':
+            continue
+        if locations[name] == 'home':
+            continue
+        loc = LocationData(location=locations[name], name=name, created_by=Now())
+        loc.save()
+
     return Response(status=status.HTTP_201_CREATED)
     # except:
     #     return Response(status=status.HTTP_400_BAD_REQUEST)

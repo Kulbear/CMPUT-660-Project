@@ -1,7 +1,12 @@
 from django.contrib.auth.models import User, Group
-from sensors.models import Room, Device, DeviceData, Person, CameraRecord, SensorData
+from sensors.models import Room, Device, DeviceData, LocationData, CameraRecord, SensorData
 from rest_framework import serializers
 
+
+class LocationDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationData
+        fields = ['location', 'name', 'created_by']
 
 class SensorDataSerializer(serializers.ModelSerializer):
     class Meta:

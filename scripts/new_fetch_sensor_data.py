@@ -105,42 +105,47 @@ for host in [API_HOST_2]:
 import time
 
 while True:
-    time.sleep(2)
-    req = requests.get(API_HOST_2 + '/v1/devices/all', headers=headers)
-    all_device_data = json.loads(req.content.decode('utf-8'))
+    try:
+        time.sleep(2)
+        req = requests.get(API_HOST_2 + '/v1/devices/all', headers=headers)
+        all_device_data = json.loads(req.content.decode('utf-8'))
 
-    sensor_data = {}
-    sensor_data['data'] = defaultdict(dict)
-    for room in room_device_mapping:
-        for d_id, d_type in room_device_mapping[room]:
-            try:
-                result = all_device_data['data'][d_id]
-                data = result['components']['main']
-                if 'outlet' in data:
-                    device_type = 'Room_Outlet_Controller'
-                    value = data['powerMeter']['power']['value']
-                elif 'motionSensor' in data:
-                    device_type = 'Room_Motion_Sensor'
-                    value = data['motionSensor']['motion']['value']
-                elif 'temperatureMeasurement' in data:
-                    device_type = 'Room_Temperature_Sensor'
-                    value = data['temperatureMeasurement']['temperature']['value']
-                elif 'lock' in data:
-                    device_type = 'Room_Lock_Controller'
-                    value = data['lock']['lock']['value']
-                elif 'face' in data:
-                    device_type = 'Room_Door_Camera'
-                    value = data['face']['face']['name']
-                sensor_data['data'][room][name_type_template[device_type].format(''.join(room.split('_')[-3:]))] = {
-                    'type': device_type,
-                    'value': value
-                }
-            except:
-                print(d_id, 'failed!')
+        sensor_data = {}
+        sensor_data['data'] = defaultdict(dict)
+        for room in room_device_mapping:
+            for d_id, d_type in room_device_mapping[room]:
+                try:
+                    result = all_device_data['data'][d_id]
+                    data = result['components']['main']
+                    if 'outlet' in data:
+                        device_type = 'Room_Outlet_Controller'
+                        value = data['powerMeter']['power']['value']
+                    elif 'motionSensor' in data:
+                        device_type = 'Room_Motion_Sensor'
+                        value = data['motionSensor']['motion']['value']
+                    elif 'temperatureMeasurement' in data:
+                        device_type = 'Room_Temperature_Sensor'
+                        value = data['temperatureMeasurement']['temperature']['value']
+                    elif 'lock' in data:
+                        device_type = 'Room_Lock_Controller'
+                        value = data['lock']['lock']['value']
+                    elif 'face' in data:
+                        device_type = 'Room_Door_Camera'
+                        value = data['face']['face']['name']
+                    sensor_data['data'][room][name_type_template[device_type].format(''.join(room.split('_')[-3:]))] = {
+                        'type': device_type,
+                        'value': value
+                    }
+                except:
+                    print(d_id, 'failed!')
 
-    sensor_data['data'] = dict(sensor_data['data'])
-    first_location = update_person_location(sensor_data, first_location)
-    print(first_location)
-    del sensor_data['time']
-    upload_data = {'sensor_data': str(sensor_data), 'location': str(first_location)}
-    r = requests.post(url=API_ENDPOINT + 'sec_sensor_data/', json=upload_data)
+        sensor_data['data'] = dict(sensor_data['data'])
+        first_location = update_person_location(sensor_data, first_location)
+        print(first_location)
+        del sensor_data['time']
+        location_data = dict(first_location)
+        del location_data['time']
+        upload_data = {'sensor_data': str(sensor_data), 'location': str(location_data)}
+        r = requests.post(url=API_ENDPOINT + 'sec_sensor_data/', json=upload_data)
+    except:
+        pass
