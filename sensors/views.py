@@ -32,8 +32,8 @@ def utilization(request):
         if array is None:
             return json.dumps({"utilization": 0})
         day_time = array[0, 2]
-        start_time = day_time.replace(hour=9, minute=0, second=0)
-        end_time = day_time.replace(hour=17, minute=0, second=0)
+        start_time = day_time.replace(hour=15, minute=0, second=0)
+        end_time = day_time.replace(hour=23, minute=0, second=0)
         valid = array[array[:, 2] >= start_time]
         if valid.shape[0] == 0:
             return json.dumps({"utilization": 0})
@@ -125,7 +125,7 @@ def room_info(request):
     room = req_data.get('room')
     now = datetime.datetime.now()
     # try:
-    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
+    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=5), now)).order_by(
         '-created_by').filter(location=room).values()
     # data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
     #     '-created_by').filter(room=room).values()
