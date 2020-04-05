@@ -132,10 +132,12 @@ def room_info(request):
     #     '-created_by').filter(room=room).values()
 
     seen = set()
+    check = []
     for item in data:
         if item['name'] not in seen:
             seen.add(item['name'])
-    print(seen)
+            check.append((item['location'], item['name'], item['created_by']))
+    print(check)
     return Response(data={'room_name': room, 'occupancy_info': list(seen)}, status=status.HTTP_200_OK)
     # except:
     #     return Response(status=status.HTTP_400_BAD_REQUEST)
