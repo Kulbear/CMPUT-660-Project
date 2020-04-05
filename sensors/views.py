@@ -125,9 +125,8 @@ def room_info(request):
     room = req_data.get('room')
     now = datetime.datetime.now()
     # try:
-    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(days=1), now)).order_by(
+    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
         '-created_by').filter(location=room).values()
-    pprint(data[:20])
     # data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
     #     '-created_by').filter(room=room).values()
 
