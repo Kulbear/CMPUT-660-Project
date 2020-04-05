@@ -138,7 +138,7 @@ def room_info(request):
             seen.add(item['name'])
             check.append((item['location'], item['name'], item['created_by']))
     print(check)
-    return Response(data={'room_name': room, 'occupancy_info': list(seen)}, status=status.HTTP_200_OK)
+    return Response(data={'room_name': room, 'occupancy_info': list(check)}, status=status.HTTP_200_OK)
     # except:
     #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
