@@ -43,18 +43,22 @@ def utilization(request):
         return json.dumps({"utilization": count / (8 * 60 * 60)})
 
     req_data = request.data
-    room = req_data.get('room')
-    start = req_data.get('date', None)
-    start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
-    end_date = start_date + datetime.timedelta(days=1)
-    data = LocationData.objects.filter(location=room).filter(created_by__range=(start_date, end_date)).values()
+    try:
+        room = req_data.get('room')
+        start = req_data.get('date', None)
+        start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+        end_date = start_date + datetime.timedelta(days=1)
+        data = LocationData.objects.filter(location=room).filter(created_by__range=(start_date, end_date)).values()
 
-    result = []
-    for item in data:
-        result.append((item['location'], item['name'], item['created_by']))
-    result = utilization_response(np.array(result))
-    print(result)
-    return Response(data=result, status=status.HTTP_200_OK)
+        result = []
+        for item in data:
+            result.append((item['location'], item['name'], item['created_by']))
+        result = utilization_response(np.array(result))
+        print(result)
+        return Response(data=result, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'POST'])
 def person_room(request):
@@ -96,7 +100,6 @@ def people_room(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['GET', 'POST'])
 def people_building(request):
     req_data = request.data
@@ -112,6 +115,7 @@ def people_building(request):
             seen.add(item['name'])
     print(seen)
     return Response(data={'count': len(seen)}, status=status.HTTP_200_OK)
+
 
 @api_view(['GET', 'POST'])
 def room_info(request):
@@ -150,6 +154,7 @@ def room(request):
             response["room_info"].append([name, int(count[i])])
         print(response)
         return json.dumps(response)
+
     try:
         now = datetime.datetime.now()
         data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(

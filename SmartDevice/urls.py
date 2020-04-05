@@ -45,4 +45,5 @@ urlpatterns = [
     path('people_building/', views.people_building),
     path('people_room/', views.people_room),
     path('person_room/', views.person_room),
+    path('utilization/, views.utilization')
 ]
