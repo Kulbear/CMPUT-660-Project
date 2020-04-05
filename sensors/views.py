@@ -66,7 +66,7 @@ def fetch_location_data_by(request):
         end = req_data.get('end', None)
         start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
         end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-        d_data = LocationData.objects.filter(create_by__range=(start_date, end_date)).values()
+        d_data = LocationData.objects.filter(created_by__range=(start_date, end_date)).values()
         return Response({'data': d_data}, status=status.HTTP_200_OK)
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -84,7 +84,7 @@ def fetch_sensor_data_by(request):
     if start and end:
         start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
         end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-        d_data = DeviceData.objects.filter(create_by__range=(start_date, end_date))
+        d_data = DeviceData.objects.filter(created_by__range=(start_date, end_date))
     if device_id:
         if d_data:
             d_data = d_data.filter(device=device_id)
