@@ -37,6 +37,10 @@ urlpatterns = [
     path('get_sensor_data/', views.get_sensor_data),
     path('get_location_data/', views.fetch_location_data_by),
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
+    # query apis
+    path('room/', views.room),
+    path('room_info/', views.room_info),
 
 ]

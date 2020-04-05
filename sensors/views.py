@@ -9,12 +9,66 @@ from rest_framework import permissions
 from sensors.serializers import UserSerializer, GroupSerializer, RoomSerializer, CameraRecordSerializer
 from sensors.serializers import DeviceSerializer, DeviceDataSerializer, PersonSeiralizer, SensorDataSerializer
 from pprint import pprint
+import json
+import numpy as np
 import ast
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 
+@api_view(['GET', 'POST'])
+def room_info(request):
+    req_data = request.data
+    room = req_data.get('room')
+    now = datetime.datetime.now()
+    # try:
+    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(days=1), now)).order_by(
+        '-created_by').filter(location=room).values()
+    # data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
+    #     '-created_by').filter(room=room).values()
+
+    seen = set()
+    for item in data:
+        if item['name'] not in seen:
+            seen.add(item['name'])
+    print(seen)
+    return Response(data={'room_name': room, 'occupancy_info': list(seen)}, status=status.HTTP_200_OK)
+    # except:
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'POST'])
+def room(request):
+    def room_response(array):
+        """
+        array: numpy array contains three column: location, name, time
+        where all time is the same as request_time/last available time in DB
+        Similar to
+        """
+        response = {"room_info": list()}
+        if not array:
+            return json.dumps(response)
+        room_name, count = np.unique(array[:, 0], return_counts=True)
+        for i, name in enumerate(room_name):
+            response["room_info"].append([name, int(count[i])])
+        print(response)
+        return json.dumps(response)
+
+    now = datetime.datetime.now()
+    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
+        '-created_by').values()
+    # data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(days=1), now)).order_by(
+    #     '-created_by').values()
+    result = []
+    seen = set()
+    for item in data:
+        if item['name'] not in seen:
+            result.append((item['location'], item['name'], item['created_by']))
+            seen.add(item['name'])
+    result = room_response(np.array(result))
+    print(result)
+    return Response(data=result, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
