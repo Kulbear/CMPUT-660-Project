@@ -77,7 +77,7 @@ def person_room(request):
             if item['location'] not in seen:
                 seen.add(item['location'])
         print(seen)
-        return Response(data={'room': str(seen)}, status=status.HTTP_200_OK)
+        return Response(data={'room': list(seen)}, status=status.HTTP_200_OK)
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -97,7 +97,7 @@ def people_room(request):
             if item['name'] not in seen:
                 seen.add(item['name'])
         print(seen)
-        return Response(data={'count': len(seen), 'occupancy_info': str(seen)}, status=status.HTTP_200_OK)
+        return Response(data={'count': len(seen), 'occupancy_info': list(seen)}, status=status.HTTP_200_OK)
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
