@@ -53,8 +53,10 @@ def utilization(request):
         result = []
         for item in data:
             result.append((item['location'], item['name'], item['created_by']))
-        result = utilization_response(np.array(result))
-        print(result)
+        if len(result) == 0:
+            result = utilization_response(None)
+        else:
+            result = utilization_response(np.array(result))
         return Response(data=result, status=status.HTTP_200_OK)
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -75,7 +77,7 @@ def person_room(request):
             if item['location'] not in seen:
                 seen.add(item['location'])
         print(seen)
-        return Response(data={'count': len(seen)}, status=status.HTTP_200_OK)
+        return Response(data={'room': str(seen)}, status=status.HTTP_200_OK)
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -147,7 +149,7 @@ def room(request):
         Similar to
         """
         response = {"room_info": list()}
-        if not array:
+        if array is None:
             return json.dumps(response)
         room_name, count = np.unique(array[:, 0], return_counts=True)
         for i, name in enumerate(room_name):
@@ -167,7 +169,10 @@ def room(request):
             if item['name'] not in seen:
                 result.append((item['location'], item['name'], item['created_by']))
                 seen.add(item['name'])
-        result = room_response(np.array(result))
+        if len(seen) == 0:
+            result = room_response(None)
+        else:
+            result = room_response(np.array(result))
         print(result)
         return Response(data=result, status=status.HTTP_200_OK)
     except:
