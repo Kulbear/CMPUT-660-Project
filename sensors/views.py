@@ -95,7 +95,7 @@ def people_room(request):
             if item['name'] not in seen:
                 seen.add(item['name'])
         print(seen)
-        return Response(data={'count': len(seen)}, status=status.HTTP_200_OK)
+        return Response(data={'count': len(seen), 'occupancy_info': str(seen)}, status=status.HTTP_200_OK)
     except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -241,7 +241,7 @@ def fetch_sensor_data_by(request):
     if start and end:
         start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
         end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
-        d_data = DeviceData.objects.filter(created_by__range=(start_date, end_date))
+        d_data = DeviceData.objects.filter(create_by__range=(start_date, end_date))
     if device_id:
         if d_data:
             d_data = d_data.filter(device=device_id)
