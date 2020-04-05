@@ -42,5 +42,7 @@ urlpatterns = [
     # query apis
     path('room/', views.room),
     path('room_info/', views.room_info),
-
+    path('people_building/', views.people_building),
+    path('people_room/', views.people_room),
+    path('person_room/', views.person_room),
 ]

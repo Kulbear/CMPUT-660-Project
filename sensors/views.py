@@ -18,6 +18,102 @@ from rest_framework.response import Response
 
 
 @api_view(['GET', 'POST'])
+def utilization(request):
+    def utilization_response(array):
+        """
+        array: numpy array contains three column: name, location, time
+        where time is in the same day
+        Similar to
+
+        SELECT time, name, location
+        FROM table
+        WHERE time = date('today')
+        """
+        if array is None:
+            return json.dumps({"utilization": 0})
+        day_time = array[0, 2]
+        start_time = day_time.replace(hour=9, minute=0, second=0)
+        end_time = day_time.replace(hour=17, minute=0, second=0)
+        valid = array[array[:, 2] >= start_time]
+        if valid.shape[0] == 0:
+            return json.dumps({"utilization": 0})
+        valid = valid[valid[:, 2] < end_time]
+
+        count = len(np.unique(valid[:, 2]))
+        return json.dumps({"utilization": count / (8 * 60 * 60)})
+
+    req_data = request.data
+    room = req_data.get('room')
+    start = req_data.get('date', None)
+    start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+    end_date = start_date + datetime.timedelta(days=1)
+    data = LocationData.objects.filter(location=room).filter(created_by__range=(start_date, end_date)).values()
+
+    result = []
+    for item in data:
+        result.append((item['location'], item['name'], item['created_by']))
+    result = utilization_response(np.array(result))
+    print(result)
+    return Response(data=result, status=status.HTTP_200_OK)
+
+@api_view(['GET', 'POST'])
+def person_room(request):
+    req_data = request.data
+    start = req_data.get('start', None)
+    end = req_data.get('end', None)
+    try:
+        name = req_data.get('name')
+        start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+        end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+        data = LocationData.objects.filter(created_by__range=(start_date, end_date)).filter(name=name).values()
+        seen = set()
+        for item in data:
+            if item['location'] not in seen:
+                seen.add(item['location'])
+        print(seen)
+        return Response(data={'count': len(seen)}, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'POST'])
+def people_room(request):
+    req_data = request.data
+    start = req_data.get('start', None)
+    end = req_data.get('end', None)
+    room = req_data.get('room')
+    try:
+        start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+        end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+        data = LocationData.objects.filter(created_by__range=(start_date, end_date)).filter(location=room).values()
+        seen = set()
+        for item in data:
+            if item['name'] not in seen:
+                seen.add(item['name'])
+        print(seen)
+        return Response(data={'count': len(seen)}, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET', 'POST'])
+def people_building(request):
+    req_data = request.data
+    start = req_data.get('start', None)
+    end = req_data.get('end', None)
+    start_date = datetime.datetime.strptime(start, '%Y-%m-%d %H:%M:%S')
+    end_date = datetime.datetime.strptime(end, '%Y-%m-%d %H:%M:%S')
+    data = LocationData.objects.filter(created_by__range=(start_date, end_date)).values()
+
+    seen = set()
+    for item in data:
+        if item['name'] not in seen:
+            seen.add(item['name'])
+    print(seen)
+    return Response(data={'count': len(seen)}, status=status.HTTP_200_OK)
+
+@api_view(['GET', 'POST'])
 def room_info(request):
     req_data = request.data
     room = req_data.get('room')
@@ -54,21 +150,23 @@ def room(request):
             response["room_info"].append([name, int(count[i])])
         print(response)
         return json.dumps(response)
-
-    now = datetime.datetime.now()
-    data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
-        '-created_by').values()
-    # data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(days=1), now)).order_by(
-    #     '-created_by').values()
-    result = []
-    seen = set()
-    for item in data:
-        if item['name'] not in seen:
-            result.append((item['location'], item['name'], item['created_by']))
-            seen.add(item['name'])
-    result = room_response(np.array(result))
-    print(result)
-    return Response(data=result, status=status.HTTP_200_OK)
+    try:
+        now = datetime.datetime.now()
+        data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(seconds=10), now)).order_by(
+            '-created_by').values()
+        # data = LocationData.objects.filter(created_by__range=(now - datetime.timedelta(days=1), now)).order_by(
+        #     '-created_by').values()
+        result = []
+        seen = set()
+        for item in data:
+            if item['name'] not in seen:
+                result.append((item['location'], item['name'], item['created_by']))
+                seen.add(item['name'])
+        result = room_response(np.array(result))
+        print(result)
+        return Response(data=result, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
