@@ -377,8 +377,8 @@ def sensor_data_stream(request, device_id=None):
     face_name = ''
     face_email = ''
     if 'face' in data:
-        face_name = data['face']['name']
-        face_email = data['face']['email']
+        face_name = data['face']['face']['name']
+        face_email = data['face']['face']['email']
 
     # outlet only
     outlet_switch_value = ''
